@@ -28,7 +28,7 @@ function Signup() {
     setLoading(true);
     setError("");
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
+      const backendUrl = "https://deepseek-ai-clone-zexi.onrender.com";
       const { data } = await axios.post(
         `${backendUrl}/api/v1/user/signup`,
         {

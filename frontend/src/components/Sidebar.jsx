@@ -15,7 +15,7 @@ function Sidebar({ currentChatId, setCurrentChatId, onClose }) {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://deepseek-ai-clone-zexi.onrender.com";
         const { data } = await axios.get(`${backendUrl}/api/v1/chat`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -33,7 +33,7 @@ function Sidebar({ currentChatId, setCurrentChatId, onClose }) {
 
   const handleLogout = async () => {
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://deepseek-ai-clone-zexi.onrender.com";
       const { data } = await axios.get(
         `${backendUrl}/api/v1/user/logout`,
         {

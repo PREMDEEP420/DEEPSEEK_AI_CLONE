@@ -23,7 +23,7 @@ function Promt({ currentChatId, setCurrentChatId }) {
       }
       try {
         const token = localStorage.getItem("token");
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
+        const backendUrl = "https://deepseek-ai-clone-zexi.onrender.com";
         const { data } = await axios.get(`${backendUrl}/api/v1/chat/${currentChatId}/messages`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -49,7 +49,7 @@ function Promt({ currentChatId, setCurrentChatId }) {
 
     try {
       const token = localStorage.getItem("token");
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://deepseek-ai-clone-zexi.onrender.com";
       const { data } = await axios.post(
         `${backendUrl}/api/v1/deepseekai/promt`,
         { content: trimmed, chatId: currentChatId },
