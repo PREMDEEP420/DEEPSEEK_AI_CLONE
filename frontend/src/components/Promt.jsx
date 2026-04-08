@@ -47,11 +47,6 @@ function Promt({ currentChatId, setCurrentChatId }) {
     const trimmed = inputValue.trim();
     if (!trimmed) return;
 
-    let content = trimmed;
-    if (fileText) {
-      content = `Based on this document:\n${fileText}\n\nQuestion: ${trimmed}`;
-    }
-
     setInputValue("");
     setTypeMessage(trimmed);
     setLoading(true);
@@ -61,10 +56,11 @@ function Promt({ currentChatId, setCurrentChatId }) {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://deepseek-ai-clone-zexi.onrender.com";
       const { data } = await axios.post(
         `${backendUrl}/api/v1/deepseekai/promt`,
-        { content, chatId: currentChatId, imageBase64 },
+        { content: trimmed, chatId: currentChatId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
           withCredentials: true,
         }
@@ -79,9 +75,6 @@ function Promt({ currentChatId, setCurrentChatId }) {
         { role: "user", content: trimmed },
         { role: "assistant", content: data.reply },
       ]);
-      setFileText("");
-      setImageBase64("");
-      setFilePreview("");
     } catch (error) {
       console.error("API Error:", error);
       setPromt((prev) => [

@@ -16,29 +16,17 @@ const port = process.env.PORT || 4001;
 const MONGO_URL = process.env.MONGO_URI;
 
 // middleware
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'https://deepseek-ai-clone-zexi.onrender.com',
-        'https://landing-page-bl7r.vercel.app'
-      ];
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://deepseek-ai-clone-zexi.onrender.com', 'https://landing-page-bl7r.vercel.app'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+}));
 
 // Root route (IMPORTANT for Render test)
 app.get("/", (req, res) => {
