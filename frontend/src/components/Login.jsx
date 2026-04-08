@@ -31,6 +31,11 @@ function Login() {
   };
 
   const handleLogin = async () => {
+    if (!formData.email.trim() || !formData.password) {
+      setError("Email and password are required");
+      return;
+    }
+    
     setLoading(true);
     setError("");
     try {
@@ -38,10 +43,13 @@ function Login() {
       const { data } = await axios.post(
         `${backendUrl}/api/v1/user/login`,
         {
-          email: formData.email,
+          email: formData.email.trim().toLowerCase(),
           password: formData.password,
         },
         {
+          headers: {
+            "Content-Type": "application/json",
+          },
           withCredentials: true,
         }
       );
@@ -52,8 +60,9 @@ function Login() {
       setAuthUser(data.token);
       navigate("/");
     } catch (error) {
-      const msg = error?.response?.data?.errors || "Login Failed";
+      const msg = error?.response?.data?.errors || error?.message || "Login Failed";
       setError(msg);
+      console.error("Login Error:", error);
     } finally {
       setLoading(false);
     }

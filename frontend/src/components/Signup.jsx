@@ -32,25 +32,53 @@ function Signup() {
   const handleSignup = async () => {
     setLoading(true);
     setError("");
+    
+    // Frontend validation
+    if (!formData.firstName.trim()) {
+      setError("First name is required");
+      setLoading(false);
+      return;
+    }
+    if (!formData.lastName.trim()) {
+      setError("Last name is required");
+      setLoading(false);
+      return;
+    }
+    if (!formData.email.trim() || !formData.email.includes("@")) {
+      setError("Valid email is required");
+      setLoading(false);
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
+    
     try {
       const backendUrl = "https://deepseek-ai-clone-zexi.onrender.com";
       const { data } = await axios.post(
         `${backendUrl}/api/v1/user/signup`,
         {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim().toLowerCase(),
           password: formData.password,
         },
         {
+          headers: {
+            "Content-Type": "application/json",
+          },
           withCredentials: true,
         }
       );
       alert(data.message || "Signup Succeeded");
+      setFormData({ firstName: "", lastName: "", email: "", password: "" });
       navigate("/login");
     } catch (error) {
-      const msg = error?.response?.data?.errors || "Signup Failed";
+      const msg = error?.response?.data?.errors || error?.message || "Signup Failed";
       setError(msg);
+      console.error("Signup Error:", error);
     } finally {
       setLoading(false);
     }
