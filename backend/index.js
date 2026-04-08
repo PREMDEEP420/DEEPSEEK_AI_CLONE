@@ -19,12 +19,17 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || "*",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Root route (IMPORTANT for Render test)
+app.get("/", (req, res) => {
+  res.send("Server running on Render 🚀");
+});
 
 // DB Connection
 mongoose
@@ -36,6 +41,7 @@ mongoose
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/deepseekai", promtRoutes);
 
+// start server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
