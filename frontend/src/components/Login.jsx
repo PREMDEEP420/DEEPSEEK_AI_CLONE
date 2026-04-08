@@ -1,4 +1,4 @@
-import { Eye } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -11,6 +11,7 @@ function Login() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const [, setAuthUser] = useAuth();
@@ -23,6 +24,10 @@ function Login() {
       ...formData,
       [name]: value,
     });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleLogin = async () => {
@@ -78,15 +83,14 @@ function Login() {
         <div className="mb-4 mt-2 relative">
           <input
             className="w-full bg-transparent border border-gray-600 rounded-md px-4 py-3 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a6ff0]"
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="password"
             placeholder="password"
             value={formData.password}
             onChange={handleChange}
           />
-          <span className=" absolute right-3 top-3 text-gray-400">
-            {" "}
-            <Eye size={18} />{" "}
+          <span className=" absolute right-3 top-3 text-gray-400 cursor-pointer" onClick={togglePasswordVisibility}>
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </span>
         </div>
 

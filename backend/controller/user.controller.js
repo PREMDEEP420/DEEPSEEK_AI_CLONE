@@ -8,7 +8,7 @@ export const signup = async (req, res) => {
   try {
     const user = await User.findOne({ email: email });
     if (user) {
-      return res.status(401).json({ errors: "User already exist" });
+      return res.status(401).json({ errors: "Account already exists. Please login." });
     }
     const hashPassword = await bcrypt.hash(password, 10);
     const newuser = new User({
@@ -31,7 +31,7 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email: email });
 
     if (!user) {
-      return res.status(403).json({ errors: "Invalid Credentials" });
+      return res.status(403).json({ errors: "Account not found, please sign up / create an account" });
     }
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {

@@ -9,6 +9,7 @@ import cors from "cors";
 import userRoutes from "./routes/user.route.js";
 import promtRoutes from "./routes/promt.route.js";
 import chatRoutes from "./routes/chat.route.js";
+import fileRoutes from "./routes/file.route.js";
 
 const app = express();
 const port = process.env.PORT || 4001;
@@ -54,6 +55,7 @@ mongoose
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/deepseekai", promtRoutes);
 app.use("/api/v1/chat", chatRoutes);
+app.use("/api/v1/file", fileRoutes);
 
 // start server
 app.listen(port, () => {

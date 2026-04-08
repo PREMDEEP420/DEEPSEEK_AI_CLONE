@@ -10,10 +10,14 @@ import { tomorrow as codeTheme } from "react-syntax-highlighter/dist/esm/styles/
 function Promt({ currentChatId, setCurrentChatId }) {
   const [inputValue, setInputValue] = useState("");
   const [typeMessage, setTypeMessage] = useState("");
+  const [fileText, setFileText] = useState("");
+  const [imageBase64, setImageBase64] = useState("");
+  const [filePreview, setFilePreview] = useState("");
 
   const [promt, setPromt] = useState([]);
   const [loading, setLoading] = useState(false);
   const promtEndRef = useRef();
+  const fileInputRef = useRef();
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -43,6 +47,11 @@ function Promt({ currentChatId, setCurrentChatId }) {
     const trimmed = inputValue.trim();
     if (!trimmed) return;
 
+    let content = trimmed;
+    if (fileText) {
+      content = `Based on this document:\n${fileText}\n\nQuestion: ${trimmed}`;
+    }
+
     setInputValue("");
     setTypeMessage(trimmed);
     setLoading(true);
@@ -52,7 +61,7 @@ function Promt({ currentChatId, setCurrentChatId }) {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://deepseek-ai-clone-zexi.onrender.com";
       const { data } = await axios.post(
         `${backendUrl}/api/v1/deepseekai/promt`,
-        { content: trimmed, chatId: currentChatId },
+        { content, chatId: currentChatId, imageBase64 },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -70,6 +79,9 @@ function Promt({ currentChatId, setCurrentChatId }) {
         { role: "user", content: trimmed },
         { role: "assistant", content: data.reply },
       ]);
+      setFileText("");
+      setImageBase64("");
+      setFilePreview("");
     } catch (error) {
       console.error("API Error:", error);
       setPromt((prev) => [
@@ -88,6 +100,50 @@ function Promt({ currentChatId, setCurrentChatId }) {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSend();
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setFileText("");
+    setImageBase64("");
+    setFilePreview("");
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageBase64(reader.result);
+        setFilePreview(file.name);
+      };
+      reader.readAsDataURL(file);
+      alert("Image attached. You can now ask questions about it.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const token = localStorage.getItem("token");
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://deepseek-ai-clone-zexi.onrender.com";
+      const { data } = await axios.post(`${backendUrl}/api/v1/file/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setFileText(data.text);
+      setFilePreview(file.name);
+      alert("File uploaded successfully. You can now ask questions about it.");
+    } catch (error) {
+      console.error("File upload error:", error);
+      alert("Failed to upload file.");
+    }
+  };
+
+  const handlePaperclipClick = () => {
+    fileInputRef.current.click();
   };
 
   return (
@@ -180,6 +236,13 @@ function Promt({ currentChatId, setCurrentChatId }) {
       {/* ➤ Input Box */}
       <div className="w-full max-w-4xl relative mt-auto">
         <div className="bg-[#2f2f2f] rounded-[2rem] px-4 md:px-6 py-6 md:py-8 shadow-md">
+          {filePreview && (
+            <div className="mb-3 px-3 py-1.5 bg-gray-700/50 w-max rounded-md flex items-center border border-gray-600">
+              <Paperclip className="w-4 h-4 mr-2 text-blue-400" />
+              <span className="text-gray-300 text-sm truncate max-w-[200px]">{filePreview}</span>
+              <button onClick={() => { setFilePreview(""); setFileText(""); setImageBase64(""); }} className="ml-3 text-gray-500 hover:text-red-400 text-xs">✕</button>
+            </div>
+          )}
           <input
             type="text"
             placeholder="💬 Message DeepSeek"
@@ -204,7 +267,14 @@ function Promt({ currentChatId, setCurrentChatId }) {
 
             {/* ➤ Send Button */}
             <div className="flex items-center gap-2 ml-auto">
-              <button className="text-gray-400 hover:text-white transition">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept=".pdf,image/*"
+                style={{ display: "none" }}
+              />
+              <button className="text-gray-400 hover:text-white transition" onClick={handlePaperclipClick}>
                 <Paperclip className="w-5 h-5" />
               </button>
               <button
