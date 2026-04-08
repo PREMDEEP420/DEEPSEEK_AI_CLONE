@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow as codeTheme } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-function Promt() {
+function Promt({ currentChatId, setCurrentChatId }) {
   const [inputValue, setInputValue] = useState("");
   const [typeMessage, setTypeMessage] = useState("");
 
@@ -16,21 +16,24 @@ function Promt() {
   const promtEndRef = useRef();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      const storedPromt = localStorage.getItem(`promtHistory_${user._id}`);
-      if (storedPromt) {
-        setPromt(JSON.parse(storedPromt));
+    const fetchMessages = async () => {
+      if (!currentChatId) {
+        setPromt([]);
+        return;
       }
-    }
-  }, []);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      localStorage.setItem(`promtHistory_${user._id}`, JSON.stringify(promt));
-    }
-  }, [promt]);
+      try {
+        const token = localStorage.getItem("token");
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
+        const { data } = await axios.get(`${backendUrl}/api/v1/chat/${currentChatId}/messages`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPromt(data);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    };
+    fetchMessages();
+  }, [currentChatId]);
 
   useEffect(() => {
     promtEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -46,10 +49,10 @@ function Promt() {
 
     try {
       const token = localStorage.getItem("token");
-
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
       const { data } = await axios.post(
-        "http://localhost:4002/api/v1/deepseekai/promt",
-        { content: trimmed },
+        `${backendUrl}/api/v1/deepseekai/promt`,
+        { content: trimmed, chatId: currentChatId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,6 +60,10 @@ function Promt() {
           withCredentials: true,
         }
       );
+
+      if (!currentChatId && data.chatId) {
+        setCurrentChatId(data.chatId);
+      }
 
       setPromt((prev) => [
         ...prev,

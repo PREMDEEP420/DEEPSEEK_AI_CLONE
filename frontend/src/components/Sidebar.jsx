@@ -1,19 +1,41 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { LogOut, X } from "lucide-react";
 import { useAuth } from "../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Sidebar({ onClose }) {
+function Sidebar({ currentChatId, setCurrentChatId, onClose }) {
+  const [chats, setChats] = useState([]);
   const user = JSON.parse(localStorage.getItem("user"));
-  console.log(user);
-  const [, setAuthUser] = useAuth();
+  const [authUser, setAuthUser] = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
+        const { data } = await axios.get(`${backendUrl}/api/v1/chat`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setChats(data);
+      } catch (error) {
+        console.error("Error fetching chats", error);
+        if (error?.response?.status === 401) {
+          setAuthUser(null);
+          navigate("/login");
+        }
+      }
+    };
+    fetchChats();
+  }, [currentChatId, setAuthUser, navigate]);
 
   const handleLogout = async () => {
     try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
       const { data } = await axios.get(
-        "http://localhost:4002/api/v1/user/logout",
+        `${backendUrl}/api/v1/user/logout`,
         {
           withCredentials: true,
         }
@@ -44,12 +66,23 @@ function Sidebar({ onClose }) {
 
         {/* History */}
         <div className=" flex-1 overflow-y-auto px-4 py-3 space-y-2">
-          <button className=" w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl mb-4">
+          <button onClick={() => setCurrentChatId(null)} className=" w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl mb-4">
             + New Chat
           </button>
-          <div className=" text-gray-500 text-sm mt-20 text-center">
-            No chat history yet
-          </div>
+          {chats.length === 0 ? (
+            <div className=" text-gray-500 text-sm mt-20 text-center">
+              No chat history yet
+            </div>
+          ) : (
+            chats.map((chat) => (
+              <div 
+                key={chat._id} 
+                onClick={() => setCurrentChatId(chat._id)}
+                className={`p-2 rounded-lg cursor-pointer text-sm truncate ${currentChatId === chat._id ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}>
+                {chat.title}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -66,13 +99,20 @@ function Sidebar({ onClose }) {
           </span>
         </div>
 
-        {user && (
+        {authUser ? (
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 duration-300 transition"
           >
             <LogOut className="" />
             Logout
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate("/login")}
+            className="w-full flex items-center justify-center gap-2 text-white bg-blue-600 font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 duration-300 transition"
+          >
+            Login / Signup
           </button>
         )}
       </div>

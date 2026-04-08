@@ -29,8 +29,9 @@ function Login() {
     setLoading(true);
     setError("");
     try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
       const { data } = await axios.post(
-        "http://localhost:4002/api/v1/user/login",
+        `${backendUrl}/api/v1/user/login`,
         {
           email: formData.email,
           password: formData.password,

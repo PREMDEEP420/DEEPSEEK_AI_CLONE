@@ -5,6 +5,7 @@ import { Menu } from "lucide-react";
 
 function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState(null);
 
   return (
     <div className="flex h-screen bg-[#1e1e1e] text-white overflow-hidden">
@@ -14,7 +15,7 @@ function Home() {
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:translate-x-0 md:relative md:flex-shrink-0`}
       >
-        <Sidebar />
+        <Sidebar currentChatId={currentChatId} setCurrentChatId={setCurrentChatId} onClose={() => setIsSidebarOpen(false)} />
       </div>
 
       {/* Main content */}
@@ -29,7 +30,7 @@ function Home() {
 
         {/* Message area */}
         <div className="flex-1 flex items-center justify-center px-2 sm:px-6">
-          <Promt />
+          <Promt currentChatId={currentChatId} setCurrentChatId={setCurrentChatId} />
         </div>
       </div>
 

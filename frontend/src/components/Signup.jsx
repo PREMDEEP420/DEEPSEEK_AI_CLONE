@@ -28,8 +28,9 @@ function Signup() {
     setLoading(true);
     setError("");
     try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4002";
       const { data } = await axios.post(
-        "http://localhost:4002/api/v1/user/signup",
+        `${backendUrl}/api/v1/user/signup`,
         {
           firstName: formData.firstName,
           lastName: formData.lastName,
